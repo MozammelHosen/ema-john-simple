@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { addToDb, getShoppingCart } from "../FackDB";
 import Loading from "../Share/Loading";
+import Card from "./Card";
 import CardProducts from "./CardProducts";
 
 const Products = () => {
@@ -7,12 +9,11 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [card, setCard] = useState([]);
 
-  const handleAddToCart  = (propss) => {
-    const newCard = [...card,propss]
-    setCard(newCard)
-    // console.log(...card,props)
+  const handleAddToCart = (propss) => {
+    const newCard = [...card, propss];
+    setCard(newCard);
+    addToDb(propss.id);
   };
-  // console.log(props.length);
 
   useEffect(() => {
     fetch("Products.json")
@@ -22,6 +23,17 @@ const Products = () => {
         setProducts(data);
       });
   }, []);
+
+  useEffect(() => {
+    const storedCard = getShoppingCart();
+    for (const id in storedCard) {
+      const addedProducts = products.find((product) => product.id === id);
+     
+      const quantity = storedCard[id];
+      console.log("Hello",addedProducts,"Hwelllo",quantity)
+      addedProducts.quantity = quantity;
+    }
+  }, [products]);
 
   if (loading) {
     return <Loading />;
@@ -36,16 +48,16 @@ const Products = () => {
               <CardProducts
                 product={product}
                 key={product.id}
-                handleAddToCart ={handleAddToCart }
+                handleAddToCart={handleAddToCart}
               ></CardProducts>
             );
           })}
         </div>
         <div className="bg-purple-300 w-[20%]  mt-4">
           <h1 className="text-center font-bold text-2xl">Order Summery</h1>
-          <div>
-            <h1>Selected Items: {card.length}</h1>
-          </div>
+          <>
+            <Card card={card}></Card>
+          </>
         </div>
       </div>
     </>
